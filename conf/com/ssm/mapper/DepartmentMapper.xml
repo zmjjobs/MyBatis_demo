@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssm.mapper.DepartmentMapper">
+  <sql id="allFields">id,last_name,email,gender,birthday,salary,dept_id</sql>
+  
+  <resultMap type="com.ssm.bean.Department" id="deptAndEmps">
+  	<id property="id" column="id"/>
+  	<result property="deptName" column="dept_name"/>
+  	<collection property="empList" ofType="com.ssm.bean.Employee">
+  		<id property="id" column="emp_id"/>
+  		<result property="lastName" column="last_name"/>
+  		<result property="email" column="email"/>
+  		<result property="gender" column="gender"/>
+  		<result property="birthday" column="birthday"/>
+  		<result property="salary" column="salary"/>
+  	</collection>
+  </resultMap>
+  
+  <select id="getDeptById" resultMap="deptAndEmps">
+   SELECT d.`id`,d.`dept_name`,e.`id` emp_id,e.`last_name`,e.`email`,e.`gender`,e.`salary`,e.`birthday`
+ 	FROM t_department d
+	LEFT JOIN t_employee e ON e.`dept_id` = d.`id`
+	WHERE d.`id` = #{id}
+  </select>
+</mapper>

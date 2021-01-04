@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssm.mapper.EmployeeMapper">
+  <sql id="allFields">id,last_name,email,gender,birthday,salary,dept_id</sql>
+  
+  <resultMap type="com.ssm.bean.Employee" id="empAndDept">
+  	<id property="id" column="id"/>
+  	<result property="lastName" column="last_name"/>
+  	<result property="email" column="email"/>
+  	<result property="gender" column="gender"/>
+  	<result property="birthday" column="birthday"/>
+  	<result property="salary" column="salary"/>
+  	<association property="department" javaType="com.ssm.bean.Department">
+  		<id property="id" column="dept_id"/>
+  		<result property="deptName" column="dept_name"/>
+  	</association>
+  </resultMap>
+  
+  <select id="getEmpById" resultMap="empAndDept">
+    SELECT e.id,e.`last_name`,e.`email`,e.`gender`,e.`salary`,e.`birthday`,
+    e.`dept_id`,d.`dept_name`
+ 	FROM t_employee e
+	LEFT JOIN t_department d ON e.`dept_id` = d.`id`
+	WHERE e.`id` = #{id}
+  </select>
+  <select id="getEmpByIdAndLastName" resultType="com.ssm.bean.Employee">
+    select <include refid="allFields"/> from t_employee where id = #{id} and last_name = #{lastName}
+  </select>
+  <select id="getAllEmps" resultType="com.ssm.bean.Employee">
+    select <include refid="allFields"/> from t_employee
+  </select>
+  <select id="getEmpsByIds" resultType="com.ssm.bean.Employee">
+    select <include refid="allFields"/> from t_employee
+    where id in 
+    <foreach collection="ids" item="itemId" open="(" close=")" separator=",">
+    	#{itemId}
+    </foreach>
+  </select>
+  <select id="getEmpsLikeLastName" resultType="com.ssm.bean.Employee">
+  	<bind name="_lastName" value="'%' + lastName + '%'"/>
+    select <include refid="allFields"/> from t_employee
+    where last_name like #{_lastName}
+  </select>
+  <select id="getEmpsByConditions" resultType="com.ssm.bean.Employee">
+    select <include refid="allFields"/> from t_employee
+    <where>
+    	<if test="lastName != null">
+  			last_name = #{lastName}
+  		</if>
+  		<if test="email != null">
+  			and email = #{email}
+  		</if>
+  		<if test="birthday != null">
+  			and birthday = #{birthday}
+  		</if>
+  		<if test="salary &gt; 0">
+  			and salary = #{salary}
+  		</if>
+  		<if test="gender &gt; -1">
+  			and gender = #{gender}
+  		</if>
+  		<if test="deptId &gt; 0">
+  			and dept_id = #{deptId}
+  		</if>
+    </where>
+  </select>
+  <select id="getAllEmpsMap" resultType="map">
+    select <include refid="allFields"/> from t_employee
+  </select>
+  <update id="updateEmployee">
+  	UPDATE t_employee 
+  	<set>
+  		<if test="lastName != null">
+  			last_name = #{lastName},
+  		</if>
+  		<if test="email != null">
+  			email = #{email},
+  		</if>
+  		<if test="birthday != null">
+  			birthday = #{birthday},
+  		</if>
+  		<if test="salary &gt; 0">
+  			salary = #{salary},
+  		</if>
+  		<if test="gender &gt; -1">
+  			gender = #{gender},
+  		</if>
+  		<if test="deptId &gt; 0">
+  			dept_id = #{deptId},
+  		</if>
+  	</set>
+  	WHERE id = #{id}
+  </update>
+  <insert id="addEmployee" useGeneratedKeys="true" keyProperty="id">
+  	INSERT INTO t_employee(<include refid="allFields"/>) 
+  	values(#{id},#{lastName},#{email},#{gender},#{birthday},#{salary},#{deptId})
+  </insert>
+  <insert id="addEmps">
+  	INSERT INTO t_employee(<include refid="allFields"/>) 
+  	values
+  	<foreach collection="emps" item="emp" separator=",">
+  		(#{emp.id},#{emp.lastName},#{emp.email},#{emp.gender},#{emp.birthday},#{emp.salary},#{emp.deptId})
+  	</foreach>
+  </insert>
+  <delete id="deleteEmployee">
+  	DELETE from t_employee WHERE id = #{id}
+  </delete>
+</mapper>
